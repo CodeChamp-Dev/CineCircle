@@ -18,9 +18,9 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@types/*": ["packages/types/src/*"],
-      "@ui/*": ["packages/ui/src/*"],
-      "@config/*": ["packages/config/src/*"]
+      "@cinecircle/types": ["packages/types/src"],
+      "@cinecircle/ui": ["packages/ui/src"],
+      "@cinecircle/config": ["packages/config/src"]
     }
   },
   "exclude": ["node_modules", "dist", "build"],

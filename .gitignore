@@ -13,6 +13,14 @@ coverage
 .next
 out
 
+# TypeScript build artifacts
+*.d.ts
+*.d.ts.map
+*.js.map
+# But include necessary config files
+!*.config.js
+!jest.*.js
+
 # Env
 .env
 .env.local
