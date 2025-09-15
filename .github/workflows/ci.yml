@@ -19,12 +19,21 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Enable & Activate pnpm via Corepack
+      - name: Setup pnpm (action-setup) # issue #10
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+          run_install: false
+
+      - name: Corepack Diagnostics
         run: |
           corepack enable
-          corepack prepare pnpm@9.7.0 --activate
+          echo "Corepack version:" $(corepack --version || echo 'n/a')
+          which pnpm || command -v pnpm || echo 'pnpm not found in PATH'
           pnpm --version
+          ls -al $(dirname $(which pnpm))
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
