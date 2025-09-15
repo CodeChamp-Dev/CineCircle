@@ -18,14 +18,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          check-latest: false
 
       - name: Setup pnpm (action-setup) # issue #10
+        id: pnpm-setup
         uses: pnpm/action-setup@v4
         with:
           version: 9.7.0
           run_install: false
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Corepack Diagnostics
         run: |
@@ -34,6 +42,14 @@ jobs:
           which pnpm || command -v pnpm || echo 'pnpm not found in PATH'
           pnpm --version
           ls -al $(dirname $(which pnpm))
+
+      - name: Fallback Global pnpm Install
+        if: failure() && steps.pnpm-setup.outcome == 'success'
+        run: |
+          echo "Attempting fallback global pnpm install" >&2
+          npm i -g pnpm@9.7.0
+          which pnpm
+          pnpm --version
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
