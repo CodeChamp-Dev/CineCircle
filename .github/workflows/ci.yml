@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, chore/**, feat/**, fix/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          check-latest: false
+
+      - name: Setup pnpm (action-setup) # issue #10
+        id: pnpm-setup
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+          run_install: false
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Corepack Diagnostics
+        run: |
+          corepack enable
+          echo "Corepack version:" $(corepack --version || echo 'n/a')
+          which pnpm || command -v pnpm || echo 'pnpm not found in PATH'
+          pnpm --version
+          ls -al $(dirname $(which pnpm))
+
+      - name: Fallback Global pnpm Install
+        if: failure() && steps.pnpm-setup.outcome == 'success'
+        run: |
+          echo "Attempting fallback global pnpm install" >&2
+          npm i -g pnpm@9.7.0
+          which pnpm
+          pnpm --version
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type Check
+        run: pnpm typecheck
+
+      - name: Run Tests
+        run: pnpm test -- --ci --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT: reports/junit/junit.xml
+
+      - name: Upload JUnit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: reports/junit/junit.xml
+          if-no-files-found: ignore
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+          if-no-files-found: ignore

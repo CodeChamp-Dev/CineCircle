@@ -1,0 +1,10 @@
+.next/
+dist/
+coverage/
+node_modules/
+apps/web/.next/
+apps/api/dist/
+**/*.d.ts
+**/*.d.ts.map
+*.log
+reports/

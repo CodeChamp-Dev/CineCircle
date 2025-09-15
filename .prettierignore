@@ -1,0 +1,9 @@
+node_modules
+.dist
+.next
+coverage
+build
+dist
+.env
+.env.*
+**/generated
