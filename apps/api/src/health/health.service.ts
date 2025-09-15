@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class HealthService {
   status() {
     return {
-      status: 'ok',
+      status: "ok",
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      version: require('../../../package.json').version || '0.0.0'
+      version: process.env.npm_package_version || "0.0.0",
     };
   }
 }

@@ -2,28 +2,56 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, chore/**, feat/**, fix/** ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
-      - name: Enable Corepack
-        run: corepack enable
+
+      - name: Enable & Activate pnpm via Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.7.0 --activate
+          pnpm --version
+
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+
       - name: Lint
         run: pnpm lint
-      - name: Typecheck
+
+      - name: Type Check
         run: pnpm typecheck
-      - name: Tests
-        run: pnpm test -- --ci
+
+      - name: Run Tests
+        run: pnpm test -- --ci --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT: reports/junit/junit.xml
+
+      - name: Upload JUnit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: reports/junit/junit.xml
+          if-no-files-found: ignore
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+          if-no-files-found: ignore
