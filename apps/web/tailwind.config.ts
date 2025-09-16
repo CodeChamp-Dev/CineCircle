@@ -1,16 +1,16 @@
-import type { Config } from 'tailwindcss';
-import { tailwindPreset } from '@cinecircle/config';
+import type { Config } from "tailwindcss";
+import { tailwindPreset } from "@cinecircle/config";
 
 const config: Config = {
-  darkMode: 'class',
+  darkMode: "class",
   content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    '../../packages/ui/src/**/*.{ts,tsx}'
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "../../packages/ui/src/**/*.{ts,tsx}",
   ],
   presets: [tailwindPreset as any],
   theme: { extend: {} },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

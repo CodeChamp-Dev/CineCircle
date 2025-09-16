@@ -1,11 +1,11 @@
-import '../app/globals.css';
-import React from 'react';
-import { Metadata } from 'next';
+import "../app/globals.css";
+import React from "react";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'CineCircle – Trusted Movie Recommendations',
-  description: 'Personal recommendations & curated Cineboards among friends.',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }]
+  title: "CineCircle – Trusted Movie Recommendations",
+  description: "Personal recommendations & curated Cineboards among friends.",
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

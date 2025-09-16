@@ -5,5 +5,5 @@ export interface SeoProps {
 }
 
 export function buildTitle(suffix: string) {
-  return suffix ? `${suffix} | CineCircle` : 'CineCircle';
+  return suffix ? `${suffix} | CineCircle` : "CineCircle";
 }

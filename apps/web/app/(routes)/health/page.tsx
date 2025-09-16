@@ -1,16 +1,19 @@
-import React from 'react';
+import React from "react";
 
 async function getHealth() {
   // At runtime this will call the API route; for now assume local dev port 3001.
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'}/api/health`, {
-      // Force dynamic fetch; health is near-real-time.
-      cache: 'no-store'
-    });
-    if (!res.ok) return { status: 'error', code: res.status };
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001"}/api/health`,
+      {
+        // Force dynamic fetch; health is near-real-time.
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) return { status: "error", code: res.status };
     return res.json();
   } catch (e) {
-    return { status: 'offline' };
+    return { status: "offline" };
   }
 }
 
