@@ -1,66 +1,74 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { createClerkClient } from '@clerk/clerk-sdk-node';
 import {
   AuthUser,
   UserRole,
   LoginResponse,
   RegisterResponse,
   AuthTokenPayload,
-} from '@cinecircle/types';
-import { LoginDto, RegisterDto, UpdateProfileDto } from './dto';
+} from "@cinecircle/types";
+import { createClerkClient, ClerkClient, Session, EmailAddress } from "@clerk/clerk-sdk-node";
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+
+import { LoginDto, RegisterDto, UpdateProfileDto } from "./dto";
 
 // Mock repository interface - in real implementation, this would be a database repository
-interface AuthRepository {
-  findByClerkId(clerkId: string): Promise<AuthUser | null>;
-  findByEmail(email: string): Promise<AuthUser | null>;
-  findByUsername(username: string): Promise<AuthUser | null>;
-  findById(id: string): Promise<AuthUser | null>;
-  create(userData: Partial<AuthUser>): Promise<AuthUser>;
-  update(id: string, userData: Partial<AuthUser>): Promise<AuthUser>;
-  delete(id: string): Promise<void>;
-}
+// interface _AuthRepository {
+//   findByClerkId(clerkId: string): Promise<AuthUser | null>;
+//   findByEmail(email: string): Promise<AuthUser | null>;
+//   findByUsername(username: string): Promise<AuthUser | null>;
+//   findById(id: string): Promise<AuthUser | null>;
+//   create(userData: Partial<AuthUser>): Promise<AuthUser>;
+//   update(id: string, userData: Partial<AuthUser>): Promise<AuthUser>;
+//   delete(id: string): Promise<void>;
+// }
 
 @Injectable()
 export class AuthService {
-  private clerkClient: any;
+  private clerkClient: ClerkClient;
 
   constructor(
     private readonly jwtService: JwtService,
-    // @Inject('AUTH_REPOSITORY') private readonly repository: AuthRepository,
+    // @Inject('AUTH_REPOSITORY') private readonly repository: _AuthRepository,
   ) {
     this.clerkClient = createClerkClient({
       secretKey: process.env.CLERK_SECRET_KEY,
     });
   }
 
-  async validateClerkToken(token: string): Promise<any> {
+  async validateClerkToken(token: string): Promise<Session> {
     try {
-      const session = await this.clerkClient.sessions.verifySession(token);
+      // For now, we'll use the token as sessionId - in real implementation,
+      // you'd extract sessionId from the token or get it from the request
+      const session = await this.clerkClient.sessions.verifySession(token, token);
       return session;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid or expired session token');
+    } catch {
+      throw new UnauthorizedException("Invalid or expired session token");
     }
   }
 
   async login(loginDto: LoginDto): Promise<LoginResponse> {
     // Validate session with Clerk
     const session = await this.validateClerkToken(loginDto.token);
-    
-    if (!session || session.status !== 'active') {
-      throw new UnauthorizedException('Invalid session');
+
+    if (!session || session.status !== "active") {
+      throw new UnauthorizedException("Invalid session");
     }
 
     // For now, we'll use mock data since we don't have a real database
     // In real implementation, this would be: const user = await this.repository.findByClerkId(session.userId);
     const user = await this.getMockUser(session.userId);
-    
+
     if (!user) {
-      throw new UnauthorizedException('User not found. Please register first.');
+      throw new UnauthorizedException("User not found. Please register first.");
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException('Account is deactivated');
+      throw new UnauthorizedException("Account is deactivated");
     }
 
     const accessToken = this.generateAccessToken(user);
@@ -75,17 +83,17 @@ export class AuthService {
     // Verify user exists in Clerk
     try {
       const clerkUser = await this.clerkClient.users.getUser(registerDto.clerkId);
-      
+
       // Validate email matches
       const emailMatch = clerkUser.emailAddresses.some(
-        (email: any) => email.emailAddress === registerDto.email
+        (email: EmailAddress) => email.emailAddress === registerDto.email,
       );
-      
+
       if (!emailMatch) {
-        throw new UnauthorizedException('Email does not match Clerk user');
+        throw new UnauthorizedException("Email does not match Clerk user");
       }
-    } catch (error) {
-      throw new UnauthorizedException('Invalid Clerk user');
+    } catch {
+      throw new UnauthorizedException("Invalid Clerk user");
     }
 
     // Check for existing users (mock implementation)
@@ -93,19 +101,19 @@ export class AuthService {
     // const existingUser = await this.repository.findByClerkId(registerDto.clerkId);
     // const existingEmail = await this.repository.findByEmail(registerDto.email);
     // const existingUsername = await this.repository.findByUsername(registerDto.username);
-    
+
     const existingUser = await this.getMockUser(registerDto.clerkId);
     if (existingUser) {
-      throw new ConflictException('User already exists');
+      throw new ConflictException("User already exists");
     }
 
     // Mock check for email and username conflicts
-    if (registerDto.email === 'existing@example.com') {
-      throw new ConflictException('Email already in use');
+    if (registerDto.email === "existing@example.com") {
+      throw new ConflictException("Email already in use");
     }
-    
-    if (registerDto.username === 'existinguser') {
-      throw new ConflictException('Username already taken');
+
+    if (registerDto.username === "existinguser") {
+      throw new ConflictException("Username already taken");
     }
 
     // Create new user (mock implementation)
@@ -136,9 +144,9 @@ export class AuthService {
   async getProfile(userId: string): Promise<AuthUser> {
     // In real implementation: const user = await this.repository.findById(userId);
     const user = await this.getMockUser(userId);
-    
+
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     return user;
@@ -147,9 +155,9 @@ export class AuthService {
   async updateProfile(userId: string, updateDto: UpdateProfileDto): Promise<AuthUser> {
     // In real implementation: const user = await this.repository.findById(userId);
     const user = await this.getMockUser(userId);
-    
+
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // In real implementation: return await this.repository.update(userId, updateDto);
@@ -163,7 +171,7 @@ export class AuthService {
   }
 
   generateAccessToken(user: AuthUser): string {
-    const payload: Omit<AuthTokenPayload, 'iat' | 'exp'> = {
+    const payload: Omit<AuthTokenPayload, "iat" | "exp"> = {
       sub: user.id,
       clerkId: user.clerkId,
       email: user.email,
@@ -177,7 +185,7 @@ export class AuthService {
   async validateUser(userId: string): Promise<AuthUser | null> {
     // In real implementation: const user = await this.repository.findById(userId);
     const user = await this.getMockUser(userId);
-    
+
     if (!user || !user.isActive) {
       return null;
     }
@@ -190,36 +198,39 @@ export class AuthService {
     // Mock users for testing
     const mockUsers: AuthUser[] = [
       {
-        id: 'user_123',
-        clerkId: 'clerk_123',
-        username: 'testuser',
-        email: 'test@example.com',
-        displayName: 'Test User',
-        avatarUrl: 'https://example.com/avatar.jpg',
+        id: "user_123",
+        clerkId: "clerk_123",
+        username: "testuser",
+        email: "test@example.com",
+        displayName: "Test User",
+        avatarUrl: "https://example.com/avatar.jpg",
         role: UserRole.USER,
         isActive: true,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
       },
       {
-        id: 'user_456',
-        clerkId: 'clerk_456',
-        username: 'adminuser',
-        email: 'admin@example.com',
-        displayName: 'Admin User',
-        avatarUrl: 'https://example.com/admin-avatar.jpg',
+        id: "user_456",
+        clerkId: "clerk_456",
+        username: "adminuser",
+        email: "admin@example.com",
+        displayName: "Admin User",
+        avatarUrl: "https://example.com/admin-avatar.jpg",
         role: UserRole.ADMIN,
         isActive: true,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
       },
     ];
 
-    return mockUsers.find(user => 
-      user.id === identifier || 
-      user.clerkId === identifier || 
-      user.email === identifier || 
-      user.username === identifier
-    ) || null;
+    return (
+      mockUsers.find(
+        (user) =>
+          user.id === identifier ||
+          user.clerkId === identifier ||
+          user.email === identifier ||
+          user.username === identifier,
+      ) || null
+    );
   }
 }
