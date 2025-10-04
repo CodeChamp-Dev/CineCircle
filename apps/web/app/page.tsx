@@ -1,6 +1,7 @@
-import React from "react";
 import Link from "next/link";
-import { Container } from "@cinecircle/ui";
+import React from "react";
+
+import { Container } from "../lib/ui/Container";
 
 export default function HomePage() {
   return (
