@@ -1,19 +1,29 @@
-import "../app/globals.css";
-import React from "react";
-import { Metadata } from "next";
+import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import { Analytics } from '@vercel/analytics/next'
+import { AuthProvider } from '@/components/auth-provider'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "CineCircle – Trusted Movie Recommendations",
-  description: "Personal recommendations & curated Cineboards among friends.",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-};
+  title: 'CineCircle',
+  description: '',
+ 
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
-        {children}
+    <html lang="en">
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }
