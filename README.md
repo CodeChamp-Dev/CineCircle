@@ -34,23 +34,6 @@ packages/config - Tailwind preset & design tokens
 packages/types - Shared domain types
 packages/ui - Shared React components
 
-## Getting Started
-
-1. Enable Corepack: `corepack enable`
-2. Install deps: `pnpm install`
-3. Copy env template: `cp .env.example .env` (or set manually on Windows)
-4. Run dev: `pnpm dev`
-5. Visit Web: http://localhost:${WEB_PORT:-3000}` (default 3000)
-6. API Health: `http://localhost:${API_PORT:-4000}/api/health`
-   - Change ports by editing `.env` (`WEB_PORT`, `API_PORT`)
-
-## Key Scripts
-
-`pnpm dev` run web + api
-`pnpm lint` lint all
-`pnpm typecheck` type-only compile
-`pnpm test` run Jest
-
 ## Roadmap (Condensed)
 
 Phase 1: Auth, Friend Graph, Recommendations, Cineboards, Watchlist
