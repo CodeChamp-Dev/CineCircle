@@ -1,6 +1,0 @@
-[
-  "<rootDir>/apps/api/jest.config.ts",
-  "<rootDir>/packages/ui/jest.config.ts",
-  "<rootDir>/packages/types/jest.config.ts",
-  "<rootDir>/packages/config/jest.config.ts"
-]
