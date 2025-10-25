@@ -1,6 +1,7 @@
 import "../app/globals.css";
-import React from "react";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Metadata } from "next";
+import React from "react";
 
 export const metadata: Metadata = {
   title: "CineCircle – Trusted Movie Recommendations",
@@ -10,10 +11,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
